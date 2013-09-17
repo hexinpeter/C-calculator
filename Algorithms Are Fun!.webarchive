@@ -1,0 +1,283 @@
+bplist00—_WebMainResource’	
+_WebResourceData_WebResourceMIMEType_WebResourceTextEncodingName_WebResourceFrameName^WebResourceURLO)á<html><head><title>Algorithms Are Fun!</title>
+<style type="text/css"></style></head><body>
+
+<h3>Submissions for COMP10002 Assignment 1, 2013s2</h3>
+
+Instructions for submitting programming projects using the
+<tt>submit</tt> and <tt>verify</tt> systems.
+
+<h3>Everyone Read This First!</h3>
+
+There are two machines involved:
+<ul>
+<li>The machine your file is on (might be the shared drive accessible
+from the lab computers, might be your own PC, might be your own
+Mac/Linux machine); and
+</li><li>The server that you run <tt>submit</tt> on, and that we compile and test your programs on.
+</li></ul>
+So there are thus two steps that need to be performed:
+<ul>
+<li>The COPY step: Copy your file over to the <tt>submit</tt> machine; and then
+</li><li>The SUBMIT step: Login (in a terminal shell) to the server and run the <tt>submit</tt> command.
+</li></ul>
+How you do these two steps depends on what kind of machine you are
+on.
+But everyone has to do the two steps.
+
+<p>
+There are system-dependent differences between the <tt>gcc</tt>
+on the lab computers and the <tt>gcc</tt> on the server.
+<i>You are strongly advised
+to compile your program on the server and test it.
+Use a normal gcc command (with -lm at the end if you need the
+math library) while you are connected, and then
+execute it on that machine with some suitable data</i>.
+
+</p><p>
+After you <tt>submit</tt>, wait a few minutes, and then, before you
+disconnect from the server,
+<tt>verify</tt> your submission, to make sure that
+your program compiled smoothly and has executed on the first set of
+simple test data.
+(We will re-run all of the programs again after submision close,
+using further test data; you will not be able to acess that test data in advance.)
+
+</p><p>A complete transcript of a session from a Mac appears below, there
+are only minor differences between this and what you would see on a
+PC, and the commands that are typed to the <tt>cat:</tt> prompt are
+completely indepdendent of which machine you started at.
+
+</p><p>It is assumed throughout that your source program is in a file
+<tt>myass1.c</tt>; if not, replace <tt>myass1.c</tt> in the instructions
+by the name of your file.
+In the <tt>submit</tt> and <tt>verify</tt> commands, the first
+argument must be <tt>comp10002</tt> and is case-sensitive; and the
+second argument must be <tt>ass1</tt>, the name that is being used
+for this particular project.
+The third argument to <tt>submit</tt> is the name of your program,
+and must be the C source file (not the executable).
+
+</p><p><i>You can submit as often as you like.</i>
+Indeed, the more frequently you lodge a submission, the better off
+you will be if you have a disaster and would like to recover a
+previous version of your program.
+Submitting once a day is not at all unreasonable.
+And the sad truth is, most of the people who stuff things up at the
+last moment (5:59pm on the due date) do so because they are floundering
+around trying to understand what they are supposed to be doing.
+Practice in advance...
+
+
+</p><h3>From a PC, including the Lab machines</h3>
+
+0. Install the <tt>PuTTY</tt> and <tt>pscp</tt> programs from
+
+<a target="_blank" href="http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html">here</a>.
+
+They are already installed on the lab computers, find them in the menus
+or use Explorer to locate them.
+
+<p>1a. From your home PC or your own laptop:
+Do the COPY step using <tt>pscp</tt>, by starting up a
+<tt>cmd</tt> shell (like you did to compile the program), <tt>cd</tt>'ing to
+the directory that has your <tt>myass1.c</tt> file in it, and typing
+</p><pre>    pscp myass1.c <i>my-username</i>@cat.csse.unimelb.edu.au:
+</pre>
+(don't miss the final colon, it is required).
+You might get asked to accept an encryption key (type "yes"), and
+will need to type your University password.
+The file will then copy over to the server.
+<!--
+The COPY step can be done as is shown in the instructions in the LMS
+and the screen shots under the "Assignment 1" tab.
+<b>Or</b> you can just use <tt>pscp</tt> anyway, see the instructions below (access <tt>pscp</tt>
+from the command menus, you won't be able to install software on a lab machine).
+-->
+Note that if you have downloaded <tt>pscp</tt> and <tt>PuTTY</tt>,
+they are probably on your Desktop.
+They need to be moved to a place where they can be executed, either a
+folder that is in your path, or into (perhaps via a shortcut)
+into the directory where you have
+your C programs.
+
+<p>1b. On a lab machine:
+Do the COPY step by using Windows to copy your <tt>myass1.c</tt> file
+to the <tt>U:</tt> drived that is shared with the server.
+
+
+</p><p> 2.
+The SUBMIT step is done by using <tt>PuTTY</tt> to remote login to
+one of the student servers.
+<!--
+(again,
+see the screenshots on the LMS
+instructions if you are in any doubt; note that
+you may be asked to
+accept an encryption key by typing "yes", and will have to type your
+password).
+-->
+Use "All programs &gt; Network Apps &gt; PuTTY &gt; PuTTY"
+on the lab machines, or the location that you placed
+it on you home computer (perhaps the Desktop),
+to start PuTTY running.
+On your home computer, it may be necessary for you to "accept to execute a program that has been downloaded from the internet" first.
+</p><p>
+A dialog box will open, type <tt>cat.csse.unimelb.edu.au</tt> as the
+"destination you want to connect to", and check that the "Port" is
+set to 22.
+Then click the "Open" button, and wait for a connection to be
+established; click "Yes" to accept the server's host key if you get
+asked.
+If <tt>cat</tt> is unavailable, try any one of
+<tt>holly</tt>, <tt>queeg</tt>, <tt>rimmer</tt>, or <tt>lister</tt>;
+they are all equivalent and all share the same file systems.
+(You can always use any of these machines, <tt>cat</tt> is used here as the example for consistency only.)
+
+</p><p>
+You will then be issued with a login prompt;
+type your University username and University password to connect to the Unix server.
+
+</p><p>
+Once you have logged in, check that your file is indeed sitting there
+waiting to be submitted (use the command <tt>ls</tt>), check that it
+compiles and executes cleanly on the server (use <tt>gcc</tt> and
+etc), and then type the
+<tt>submit</tt> command:
+</p><pre>    submit comp10002 ass1 myass1.c
+</pre>
+Wait a few minutes, and then carry out the verify and check steps:
+<pre>    verify comp10002 ass1 &gt; my-receipt-ass1.txt
+    more my-receipt-ass1.txt
+</pre>
+Look through <tt>my-receipt-ass1.txt</tt> carefully to make sure that
+(a) your program compiled; (b) it executed on the single initial test
+file; and (c) that the listing that is shown is the right version of
+your program.
+
+<p>You have to have a network connection to make all of this work, of course!
+
+</p><p>Then, logout from the server using <tt>logout</tt>, and exit
+<tt>PuTTY</tt> if it doesn't close by itself.
+
+<!--
+<h3>From a Windows machine</h3>
+
+<p>There are further instructions on running <tt>pscp</tt> <a href="http://tartarus.org/~simon/putty-snapshots/htmldoc/Chapter5.html#pscp">here</a>.
+
+<p>2. Then do the SUBMIT step by connecting to the same machine by running <tt>putty</tt>, as shown on the LMS screenshots, and after completing the login process, executing
+<pre>
+    submit comp10002 ass1 myass1.c
+</pre>
+followed by the verify and check steps:
+<pre>
+    verify comp10002 ass1 > my-receipt-ass1.txt
+    more my-receipt-ass1.txt
+</pre>
+
+<p>Then, logout from the server using <tt>logout</tt>, and exit
+<tt>putty</tt> if it doesn't close by itself.
+-->
+
+
+</p><h3>From a Mac/Linux machine</h3>
+
+It's only a little different.
+
+<p>1.
+To do the COPY step, start a terminal window ("Terminal" on a mac),
+then navigate to the directory that contains your file, then execute a
+<tt>scp</tt> command (already installed on a Mac as a standard tool):
+</p><pre>    scp myass1.c <i>my-username</i>@cat.csse.unimelb.edu.au:
+</pre>
+(don't miss the final colon, and don't forget that you need to <tt>cd</tt> to
+the right directory first).
+Type your University password when prompted for it.
+
+<p>2.
+Then to do the SUBMIT step, you stay in the terminal window, and use
+<tt>ssh</tt> to create a network terminal connection through to the server:
+</p><pre>    ssh <i>my-username</i>@cat.csse.unimelb.edu.au
+</pre>
+and then once you have typed your University password (and typed
+"yes" if it asks you to accept the encryption key) everything you
+type in that window is being executed on the server.
+So now you can check that your file is there by using <tt>ls</tt>,
+compile it using <tt>gcc</tt>, and presuming that it is all ok, run
+the <tt>submit</tt> command:
+<pre>    submit comp10002 ass1 myass1.c
+</pre>
+followed a few minutes later by the verify and check steps:
+<pre>    verify comp10002 ass1 &gt; my-receipt-ass1.txt
+    more my-receipt-ass1.txt
+</pre>
+<p>Then, logout from the server using <tt>logout</tt>; you can then close the local terminal window that you were using.
+
+</p><h4>Complete Transcript</h4>
+
+With a few liberties shown, here is a complete transcript; from a PC,
+<tt>pscp</tt> will have been used to do the COPY step rather than
+<tt>scp</tt>.
+Note that this careful user is checking that their program compiles and executes on the server before doing the submission.
+Submissions that don't compile will suffer heavy penalties.
+<pre>mac: cd 10002/ass1
+
+mac: scp myass1.c alistair@cat.csse.unimelb.edu.au:
+alistair@cat.csse.unimelb.edu.au's password: XXXXXXX
+
+mac: scp mytests.txt alistair@cat.csse.unimelb.edu.au:
+alistair@cat.csse.unimelb.edu.au's password: XXXXXXX
+
+mac: ssh alistair@cat.csse.unimelb.edu.au
+Do you wish to accept security key: yes
+alistair@cat.csse.unimelb.edu.au's password: XXXXXX
+
+cat: ls
+myass1.c
+mytests.txt
+
+cat: gcc -Wall -ansi -pedantic -o myass1 myass1.c -lm
+
+cat: ./myass1 &lt; mytests.txt
+
+# <i>Should see the same output that you  got on your own computer</i>
+
+cat: submit comp10002 ass1 myass1.c
+This is part of the new submit system.
+If you have any difficulties, report them to asp@cs.mu.oz.au
+Connecting to scommd ... OK
+Saturday 7 September 2013 10:03:06
+Your submission is continuing in the background.
+Don't forget to VERIFY later.
+
+# <i>wait for a few minutes</i>
+
+cat: verify comp10002 ass1 &gt; my-receipt-ass1.txt
+This is part of the new submit system.
+If you have any difficulties, report them to asp@cs.mu.oz.au
+Connecting to scommd ... OK
+
+cat: ls
+myass1
+myass1.c
+mytests.txt
+my-receipt-ass1.txt
+
+cat: more my-receipt-ass1.txt
+
+# <i>look carefully at the file to check that your program compiled properly and executed</i>
+
+cat: logout
+Connection to cat.csse.unimelb.edu.au closed.
+
+mac:
+</pre>
+
+<p><i>
+Last updated:
+September 7, 2013
+
+</i>
+
+
+</p></body></html>Ytext/htmlUUTF-8P_Lhttp://ww2.cs.mu.oz.au/~alistair/teaching/2013-10002-s2/ass1/submission.html    ( : P n Ö î**)*/*0                           *
