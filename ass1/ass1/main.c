@@ -22,11 +22,13 @@
 #define ERROR	(-1)	/* error return value from some functions */
 
 #define TRUE 1
+#define FALSE 0
 
 #define PRINT	'?'	/* the print operator */
 #define ASSIGN	'='	/* the assignment operator */
 #define PLUS	'+'	/* the addition operator */
-#define ALLOPS  "?=+"   /* list of all valid operators */
+#define MINUS   '-'
+#define ALLOPS  "?=+-"   /* list of all valid operators */
 #define SGNCHRS "+-"    /* the two sign characters */
 #define NUMCHRS "0123456789"
 /* list of characters legal within numbers */
@@ -60,6 +62,13 @@ void initstruct(longint_t *a);
 void storevalue(longint_t *longvalue, char *string);
 int num_check(char *string);
 void reversecp(char *s1, char *s2);
+int numcmp(char *s1, char*s2);
+//void do_minus(longint_t *var1, longint_t *var2);
+void back_zero_removal(char *string);
+int ispositve(longint_t *var);
+void difference(char *s1, char *s2, char *result, int result_size);
+void negative_plus(longint_t *var1, longint_t *var2);
+void num_plus (longint_t *var1, longint_t *var2);
 /****************************************************************/
 
 
@@ -134,7 +143,7 @@ void
 process_line(longint_t vars[], char *line) {
 	int varnum, optype, status;
 	longint_t second_value;
-    
+    initstruct(&second_value);
 	/* determine the LHS variable, it
 	 * must be first character in line
 	 */
@@ -184,10 +193,59 @@ process_line(longint_t vars[], char *line) {
 	} else if (optype == ASSIGN) {
 		do_assign(vars+varnum, &second_value);
 	} else if (optype == PLUS) {
-		do_plus(vars+varnum, &second_value);
-	}
+		num_plus(vars+varnum, &second_value);
+	} 
 	return;
 }
+
+/* check if the sign of a longint_t is positive */
+int
+ispositve(longint_t *var) {
+    if (var->sign == PLUS)
+        return TRUE;
+    return FALSE;
+}
+
+/* summation operation for negative numbers */
+void
+negative_plus(longint_t *var1, longint_t *var2) {
+    if (!ispositve(var1) && !ispositve(var2)) {
+        var1->sign = MINUS;
+        do_plus(var1, var2);
+        return;
+    }
+    
+    char diff[INTSIZE + 1];
+    difference(var1->value, var2->value, diff, sizeof(diff));
+    storevalue(var1, diff);
+    
+    if (!ispositve(var1) && ispositve(var2)) {
+        if (numcmp(var1->value, var2->value)) {
+            var1->sign = MINUS;
+        } else {
+            var1->sign = PLUS;
+        }
+    } else if (ispositve(var1) && !ispositve(var2)) {
+        if (numcmp(var1->value, var2->value)) {
+            var1->sign = PLUS;
+        } else {
+            var1->sign = MINUS;
+        }
+    }
+    do_print(var1);
+    
+}
+
+/* does the summation for negative numbers, var1 = var1 + var2 */
+void
+num_plus (longint_t *var1, longint_t *var2) {
+    if (ispositve(var1) && ispositve(var2)) {
+        do_plus(var1, var2);
+    } else if (!ispositve(var1) || !ispositve(var2)) {
+        negative_plus(var1, var2);
+    } 
+}
+
 
 /****************************************************************/
 
@@ -207,10 +265,9 @@ to_varnum(char ident) {
 /****************************************************************/
 
 
-/* store an integer string into longint_t longvalue */
+/* store an integer (+ve or -ve) string into longint_t longvalue */
 void
 storevalue(longint_t *longvalue, char *string){
-    initstruct(longvalue);
     int i = 0; // a counter for longvalue.value
     
     if(ERROR == num_check(string))
@@ -305,7 +362,13 @@ to_digit(int number) {
  */
 void
 do_print(longint_t *var) {
-	printf("%s\n", var->value);
+    if (var->value[0] == CH_ZERO) {
+        printf("0\n");
+    } else if (!ispositve(var)) {
+        printf("-%s\n", var->value);
+    } else {
+        printf("%s\n", var->value);
+    }
 	return;
 }
 
@@ -336,9 +399,25 @@ reversecp(char *s1, char *s2){
 }
 
 
-/* update the indicated variable var1 by doing an addition
- * using var2 to compute var1 = var1 + var2
- */
+/* accept two positive number strings, and evaluate if s2 is smaller than s1 */
+int
+numcmp(char *s1, char*s2){
+    if (strlen(s1) > strlen(s2)) {
+        return TRUE;
+    } else if (strlen(s1) == strlen(s2)){
+        for (int i = FALSE; i < strlen(s1); i++) {
+            if (s1[i] > s2[i])
+                return TRUE;
+            else if (s1[i] < s2[i])
+                return FALSE;
+        }
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+    
+/* update the indicated variable var1 by doing an addition, using var2 to compute var1 = var1 + var2, assuming both are positive numbers */
 void
 do_plus(longint_t *var1, longint_t *var2) {
     char result[INTSIZE+1];
@@ -369,6 +448,58 @@ do_plus(longint_t *var1, longint_t *var2) {
     storevalue(var1, result2);
     do_print(var1);
     return;
+}
+
+/* remove the zero characters at the back of a number string, except the first zero */
+void
+back_zero_removal(char *string) {
+    while ((strlen(string)-1) && (string[strlen(string) -1] == CH_ZERO))
+        string[strlen(string) -1] = '\0';
+}
+
+
+/* calculates the difference between two positve numbers, stores that in the result. s1 and s2 are unchanged in the process */
+void
+difference(char *s1, char *s2, char *result, int result_size) {
+    char *bignum, *smallnum, tempresult[result_size];
+    
+    if (numcmp(s1, s2)) {
+        bignum = s1;
+        smallnum = s2;
+    } else {
+        bignum = s2;
+        smallnum = s1;
+    }
+    *tempresult = 0;
+    
+    int u1 = (int)strlen(bignum), u2 = (int)strlen(smallnum), i = 0;
+    
+    assert(numcmp(bignum, smallnum));
+    // stores the difference between bignum and smallnum in an tempresult in a reverse order
+    for (; u1 > 0 && i < INTSIZE; u1--, u2--, i++) {
+        int diff;
+        
+        int v1 = to_int(bignum[u1 - 1]);
+        int v2;
+        if (u2 > 0) {
+            v2 = to_int(smallnum[u2 - 1]);
+        } else {
+            v2 = 0;
+        }
+        
+        if ((v1 + tempresult[i])>= v2) {
+            diff = v1 + tempresult[i] - v2;
+            tempresult[i+1] = 0;
+        } else {
+            diff = v1 + tempresult[i] + 10 - v2;
+            tempresult[i+1] = -1;
+        }
+        tempresult[i] = to_digit(diff);
+    }
+    tempresult[i] = '\0';
+    
+    back_zero_removal(tempresult);
+    reversecp(result, tempresult);
 }
 
 /****************************************************************/
