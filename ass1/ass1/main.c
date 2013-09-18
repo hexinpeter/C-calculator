@@ -60,7 +60,6 @@ void initstruct(longint_t *a);
 void storevalue(longint_t *longvalue, char *string);
 int num_check(char *string);
 void reversecp(char *s1, char *s2);
-void string_to_digit(char *string);
 /****************************************************************/
 
 
@@ -246,7 +245,6 @@ num_check(char *string){
         if (strchr(NUMCHRS, *string) == NULL) {
             return ERROR;
         }
-        string++;
     }
     return TRUE;
 }
@@ -337,14 +335,6 @@ reversecp(char *s1, char *s2){
     s1[i] = '\0';
 }
 
-/* convert a string of int to a string of character digits */
-void
-string_to_digit(char *string){
-    int i;
-    for (i = 0; i < strlen(string); i++) {
-        string[i] = to_digit(string[i]);
-    }
-}
 
 /* update the indicated variable var1 by doing an addition
  * using var2 to compute var1 = var1 + var2
