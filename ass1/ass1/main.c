@@ -30,7 +30,7 @@
 #define MINUS   '-'
 #define ALLOPS  "?=+-"   /* list of all valid operators */
 #define SGNCHRS "+-"    /* the two sign characters */
-#define NUMCHRS "0123456789"
+#define NUMCHRS "0123456789,"
 /* list of characters legal within numbers */
 
 
@@ -69,6 +69,7 @@ int ispositve(longint_t *var);
 void difference(char *s1, char *s2, char *result, int result_size);
 void negative_plus(longint_t *var1, longint_t *var2);
 void num_plus (longint_t *var1, longint_t *var2);
+void removecommas(char *string);
 /****************************************************************/
 
 
@@ -291,6 +292,18 @@ storevalue(longint_t *longvalue, char *string){
     }
 }
 
+/* check that each comma and the final null terminator in a string is 3 characters apart */
+int
+comma_pattern_check(char *string) {
+    int current, first = strlen(string), i = strlen(string) - 1;
+    while (i >= 0) {
+        if (string[i] == ',') {
+            current = i;
+        }
+    }
+}
+
+
 /* check that the string is a proper number string */
 int
 num_check(char *string){
@@ -305,6 +318,24 @@ num_check(char *string){
     }
     return TRUE;
 }
+
+/* remove all the commas in a given string */
+void
+removecommas(char *string) {
+    int s = 0, t = 0;
+    char scopy[strlen(string)], temp;
+    while ((temp = string[s])) {
+        if (temp != ',')
+            scopy[t++] = temp;
+        s++;
+    }
+    scopy[t] = '\0';
+    strcpy(string, scopy);
+}
+
+
+
+
 
 /* process the input line to extract the RHS argument, which
  * should start at the pointer that is passed
