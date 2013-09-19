@@ -105,7 +105,6 @@ main(int argc, char **argv) {
 	return 0;
 }
 
-/****************************************************************/
 
 /* prints the prompt indicating ready for input
  */
@@ -113,8 +112,6 @@ void
 print_prompt(void) {
 	printf("> ");
 }
-
-/****************************************************************/
 
 /* read a line of input into the array passed as argument
  * returns false if there is no input available
@@ -133,10 +130,6 @@ read_line(char *line, int maxlen) {
 	return ((i>0) || (c!=EOF));
 }
 
-
-
-
-/****************************************************************/
 
 /* process a command by parsing the input line into parts
  */
@@ -195,7 +188,8 @@ process_line(longint_t vars[], char *line) {
 		do_assign(vars+varnum, &second_value);
 	} else if (optype == PLUS) {
 		num_plus(vars+varnum, &second_value);
-	} 
+        do_print(vars+varnum);
+	}
 	return;
 }
 
@@ -211,8 +205,8 @@ ispositve(longint_t *var) {
 void
 negative_plus(longint_t *var1, longint_t *var2) {
     if (!ispositve(var1) && !ispositve(var2)) {
-        var1->sign = MINUS;
         do_plus(var1, var2);
+        var1->sign = MINUS;
         return;
     }
     
@@ -233,8 +227,6 @@ negative_plus(longint_t *var1, longint_t *var2) {
             var1->sign = MINUS;
         }
     }
-    do_print(var1);
-    
 }
 
 /* does the summation for negative numbers, var1 = var1 + var2 */
@@ -247,8 +239,6 @@ num_plus (longint_t *var1, longint_t *var2) {
     } 
 }
 
-
-/****************************************************************/
 
 /* convert a character variable identifier to a variable number
  */
@@ -263,13 +253,12 @@ to_varnum(char ident) {
 	}
 }
 
-/****************************************************************/
-
 
 /* store an integer (+ve or -ve) string into longint_t longvalue */
 void
 storevalue(longint_t *longvalue, char *string){
     int i = 0; // a counter for longvalue.value
+    initstruct(longvalue);
     
     if(ERROR == num_check(string))
         exit(EXIT_FAILURE);
@@ -295,12 +284,16 @@ storevalue(longint_t *longvalue, char *string){
 /* check that each comma and the final null terminator in a string is 3 characters apart */
 int
 comma_pattern_check(char *string) {
-    int current, first = strlen(string), i = strlen(string) - 1;
+    int previous = (int)strlen(string), i = (int)strlen(string) - 1;
     while (i >= 0) {
         if (string[i] == ',') {
-            current = i;
+            if ((previous - i) != 3)
+                return FALSE;
+            previous = i;
         }
+        i--;
     }
+    return TRUE;
 }
 
 
@@ -308,14 +301,19 @@ comma_pattern_check(char *string) {
 int
 num_check(char *string){
     if (strchr(NUMCHRS, *string) == NULL && strchr(SGNCHRS, *string) == NULL)
-        return ERROR;
+        return FALSE;
     
     
     while (*(++string)) {
         if (strchr(NUMCHRS, *string) == NULL) {
-            return ERROR;
+            return FALSE;
         }
     }
+    
+    if (!comma_pattern_check(string)) {
+        return FALSE;
+    }
+    
     return TRUE;
 }
 
@@ -334,9 +332,6 @@ removecommas(char *string) {
 }
 
 
-
-
-
 /* process the input line to extract the RHS argument, which
  * should start at the pointer that is passed
  */
@@ -347,6 +342,7 @@ get_second_value(longint_t vars[], char *rhsarg,
     
     // rhsarg is a proper number string
 	if (TRUE == num_check(rhsarg)) {
+        removecommas(rhsarg);
         storevalue(second_value, rhsarg);        
 		return TRUE;
 	}
@@ -360,11 +356,8 @@ get_second_value(longint_t vars[], char *rhsarg,
 		*second_value = vars[varnum2];
 		return TRUE;
 	}
-    
-	return ERROR;
 }
 
-/****************************************************************/
 
 /* convert a character digit to the int equivalent, but null bytes
  * stay as zero integers
@@ -378,7 +371,6 @@ to_int(char digit) {
 	}
 }
 
-/****************************************************************/
 
 /* and back again to a digit */
 char
@@ -387,7 +379,6 @@ to_digit(int number) {
 }
 
 
-/****************************************************************/
 
 /* print out a longint value
  */
@@ -403,7 +394,6 @@ do_print(longint_t *var) {
 	return;
 }
 
-/****************************************************************/
 
 /* update the indicated variable var1 by doing an assignment
  * using var2
@@ -415,7 +405,6 @@ do_assign(longint_t *var1, longint_t *var2) {
 	*var1 = *var2;
 }
 
-/****************************************************************/
 
 /* stores the string s2 in s1 in a reverse order,s1 is assumed to have enough storage space */
 void
@@ -477,7 +466,6 @@ do_plus(longint_t *var1, longint_t *var2) {
     char result2[INTSIZE+1];
     reversecp(result2, result);
     storevalue(var1, result2);
-    do_print(var1);
     return;
 }
 
@@ -533,7 +521,6 @@ difference(char *s1, char *s2, char *result, int result_size) {
     reversecp(result, tempresult);
 }
 
-/****************************************************************/
 
 /* set the vars array to all zero values
  */
