@@ -285,14 +285,16 @@ storevalue(longint_t *longvalue, char *string){
 int
 comma_pattern_check(char *string) {
     int previous = (int)strlen(string), i = (int)strlen(string) - 1;
+    
     while (i >= 0) {
         if (string[i] == ',') {
-            if ((previous - i) != 3)
+            if ((previous - i) != 4)
                 return FALSE;
             previous = i;
         }
         i--;
     }
+    
     return TRUE;
 }
 
@@ -300,12 +302,14 @@ comma_pattern_check(char *string) {
 /* check that the string is a proper number string */
 int
 num_check(char *string){
+    //check the first element is either number, comma or sign
     if (strchr(NUMCHRS, *string) == NULL && strchr(SGNCHRS, *string) == NULL)
         return FALSE;
     
-    
-    while (*(++string)) {
-        if (strchr(NUMCHRS, *string) == NULL) {
+    //check the rest of the elments are either number or commas
+    char *strp = string; // so that pointer string will remain unchanged
+    while (*(++strp)) {
+        if (strchr(NUMCHRS, *strp) == NULL) {
             return FALSE;
         }
     }
@@ -341,7 +345,7 @@ get_second_value(longint_t vars[], char *rhsarg,
 	int varnum2;
     
     // rhsarg is a proper number string
-	if (TRUE == num_check(rhsarg)) {
+	if (num_check(rhsarg)) {
         removecommas(rhsarg);
         storevalue(second_value, rhsarg);        
 		return TRUE;
