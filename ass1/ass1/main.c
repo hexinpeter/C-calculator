@@ -70,6 +70,8 @@ void difference(char *s1, char *s2, char *result, int result_size);
 void negative_plus(longint_t *var1, longint_t *var2);
 void num_plus (longint_t *var1, longint_t *var2);
 void removecommas(char *string);
+void front_zero_removal(char *string);
+void divide_by_two(char *string);
 /****************************************************************/
 
 
@@ -288,7 +290,7 @@ comma_pattern_check(char *string) {
     
     while (i >= 0) {
         if (string[i] == ',') {
-            if ((previous - i) != 4)
+            if ((previous - i) != 4) // should be 3 characters between them
                 return FALSE;
             previous = i;
         }
@@ -452,6 +454,7 @@ do_plus(longint_t *var1, longint_t *var2) {
 	
     // stores the resulting number in an array in a reverse order
     for (; (u1 > 0 || u2 > 0) && i < INTSIZE; u1--, u2--, i++) {
+        assert(i < INTSIZE && "the summation result is too large");
         int sum;
         if (u1 <= 0) {
             sum = to_int(var2->value[u2 - 1]) + result[i];
@@ -462,8 +465,10 @@ do_plus(longint_t *var1, longint_t *var2) {
         }
         result[i] = to_digit(sum % 10);
         result[i+1] = '\0'; 
-        if (sum > 9)
+        if (sum > 9) {
+            assert(i+1 < INTSIZE && "the summation result is too large");
             result[i+1] = 1;
+        }
     }
     result[i+1] = '\0';
     
@@ -525,6 +530,50 @@ difference(char *s1, char *s2, char *result, int result_size) {
     reversecp(result, tempresult);
 }
 
+
+void
+multiply_helper(longint_t *result, char *factor, char*multiplier){
+    if (numcmp(multiplier, factor)) {
+        do_plus(result, result);
+        
+    }
+}
+
+
+
+
+#define TWO 2
+/* replace the value in string by the quotient from division by 2, the string has to be divisible by 2 */
+void
+divide_by_two(char *string) {
+    int i = 0, len = (int)strlen(string), value, remainder = 0;
+    
+    assert(!(to_int(string[len - 1]) % TWO) && "input string is not divisible by 2");
+    
+    for (; i < len; i++) {
+        value =  (remainder * 10) + to_int(string[i]);
+        remainder = value % TWO;
+        string[i] = to_digit(value/TWO);
+    }
+    
+    front_zero_removal(string);
+    
+}
+
+
+/* remove the zeros in the front of the string */
+void
+front_zero_removal(char *string) {
+    int count = 0, i, len = (int)strlen(string);
+    // calculate the number of zeros in the front
+    for (i = 0; string[i] != CH_ZERO; i++) {
+        count++;
+    }
+    
+    for (i = 0; i + count <= len; i++) {
+        string[i] = string[i + count];
+    }
+}
 
 /* set the vars array to all zero values
  */
