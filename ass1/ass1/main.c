@@ -220,10 +220,6 @@ negative_plus(longint_t *var1, longint_t *var2) {
         return;
     }
     
-    char diff[INTSIZE + 1];
-    difference(var1->value, var2->value, diff, sizeof(diff));
-    storevalue(var1, diff);
-    
     if (!ispositve(var1) && ispositve(var2)) {
         if (no_smaller(var1->value, var2->value)) {
             var1->sign = MINUS;
@@ -237,6 +233,11 @@ negative_plus(longint_t *var1, longint_t *var2) {
             var1->sign = MINUS;
         }
     }
+    
+    
+    char diff[INTSIZE + 1];
+    difference(var1->value, var2->value, diff, sizeof(diff));
+    storevalue(var1, diff);
 }
 
 /* does the summation for both positive and negative numbers, var1 = var1 + var2 */
@@ -564,15 +565,14 @@ void
 do_multiply(longint_t *multiplicand, longint_t *multiplier){
     int sign = mutiplication_sign_processing(multiplicand->sign, multiplier->sign);
     
-    longint_t factor, multiplier_cp;
+    longint_t factor, multiplier_cp, multiplicand_cp;
     storevalue(&factor, "1");
     storevalue(&multiplier_cp, multiplier->value);
     
-    if (multiplier_cp.value[0] == CH_ZERO) {
-        storevalue(multiplicand, "0");
-    } else {
-        multiply_helper(multiplicand, &factor, &multiplier_cp);
-    }
+    storevalue(&multiplicand_cp, multiplicand->value);
+    multiplicand_cp.sign = MINUS;
+    multiply_helper(multiplicand, &factor, &multiplier_cp);
+    num_plus(multiplicand, &multiplicand_cp);
     
     multiplicand->sign = sign;
 }
@@ -602,17 +602,11 @@ multiply_helper(longint_t *result, longint_t *factor, longint_t *multiplier){
         multiplier = &temp;
     }
     
+    
     //when multiplier is reduced to zero
     if (multiplier->value[0] == CH_ZERO) {
         return;
     }
-    
-    // minus multiplier by 1
-    longint_t value1;
-    initstruct(&value1);
-    storevalue(&value1, "1");
-    value1.sign = MINUS;
-    num_plus(multiplier, &value1);
     
     if (no_smaller(multiplier->value, factor->value)) {
         num_plus(result, result);
@@ -625,17 +619,17 @@ multiply_helper(longint_t *result, longint_t *factor, longint_t *multiplier){
     
     // multiplier is non-zero, but smaller than factor
     else {
-        longint_t copy;
+        longint_t copy, copy_cp;
         storevalue(&copy, result->value);
         // try addition with a value with a smaller factor
         divide_by_two(copy.value);
         divide_by_two(factor->value);
-        
+        storevalue(&copy_cp, copy.value);
+        copy_cp.sign = MINUS;
         multiply_helper(&copy, factor, multiplier);
+        num_plus(&copy, &copy_cp);
         num_plus(result, &copy);
     }
-    
-    //result->length = (int)strlen(result->value);
 }
 
 
