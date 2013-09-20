@@ -28,7 +28,8 @@
 #define ASSIGN	'='	/* the assignment operator */
 #define PLUS	'+'	/* the addition operator */
 #define MINUS   '-'
-#define ALLOPS  "?=+-"   /* list of all valid operators */
+#define MULTIPLY '*'
+#define ALLOPS  "?=+-*"   /* list of all valid operators */
 #define SGNCHRS "+-"    /* the two sign characters */
 #define NUMCHRS "0123456789,"
 /* list of characters legal within numbers */
@@ -60,10 +61,10 @@ void do_plus(longint_t *var1, longint_t *var2);
 void zero_vars(longint_t vars[]);
 void initstruct(longint_t *a);
 void storevalue(longint_t *longvalue, char *string);
+void structcopy (longint_t *s1, longint_t *s2);
 int num_check(char *string);
 void reversecp(char *s1, char *s2);
-int numcmp(char *s1, char*s2);
-//void do_minus(longint_t *var1, longint_t *var2);
+int no_smaller(char *s1, char*s2);
 void back_zero_removal(char *string);
 int ispositve(longint_t *var);
 void difference(char *s1, char *s2, char *result, int result_size);
@@ -71,7 +72,10 @@ void negative_plus(longint_t *var1, longint_t *var2);
 void num_plus (longint_t *var1, longint_t *var2);
 void removecommas(char *string);
 void front_zero_removal(char *string);
-void divide_by_two(char *string);
+char *divide_by_two(char *string);
+void multiply_helper(longint_t *result, longint_t *factor, longint_t*multiplier);
+int mutiplication_sign_processing(int sign1, int sign2);
+void do_multiply(longint_t *multiplicand, longint_t *multiplier);
 /****************************************************************/
 
 
@@ -93,6 +97,7 @@ main(int argc, char **argv) {
 	longint_t vars[NVARS]; // vars: a list of variables in the form of pointers
     
 	zero_vars(vars);
+    
 	print_prompt();
 	while (read_line(line, LINELEN)) {
 		if (strlen(line)>0) {
@@ -191,7 +196,10 @@ process_line(longint_t vars[], char *line) {
 	} else if (optype == PLUS) {
 		num_plus(vars+varnum, &second_value);
         do_print(vars+varnum);
-	}
+	} else if (optype == MULTIPLY) {
+        do_multiply(vars+varnum, &second_value);
+        do_print(vars+varnum);
+    }
 	return;
 }
 
@@ -217,13 +225,13 @@ negative_plus(longint_t *var1, longint_t *var2) {
     storevalue(var1, diff);
     
     if (!ispositve(var1) && ispositve(var2)) {
-        if (numcmp(var1->value, var2->value)) {
+        if (no_smaller(var1->value, var2->value)) {
             var1->sign = MINUS;
         } else {
             var1->sign = PLUS;
         }
     } else if (ispositve(var1) && !ispositve(var2)) {
-        if (numcmp(var1->value, var2->value)) {
+        if (no_smaller(var1->value, var2->value)) {
             var1->sign = PLUS;
         } else {
             var1->sign = MINUS;
@@ -231,7 +239,7 @@ negative_plus(longint_t *var1, longint_t *var2) {
     }
 }
 
-/* does the summation for negative numbers, var1 = var1 + var2 */
+/* does the summation for both positive and negative numbers, var1 = var1 + var2 */
 void
 num_plus (longint_t *var1, longint_t *var2) {
     if (ispositve(var1) && ispositve(var2)) {
@@ -282,6 +290,17 @@ storevalue(longint_t *longvalue, char *string){
         longvalue->value[i] = '\0';
     }
 }
+
+
+/* copies all information in s2 to s1 */
+void
+structcopy (longint_t *s1, longint_t *s2) {
+    storevalue(s1, s2->value);
+    s1->length = s2->length;
+    s1->sign = s2->sign;
+}
+
+
 
 /* check that each comma and the final null terminator in a string is 3 characters apart */
 int
@@ -427,7 +446,7 @@ reversecp(char *s1, char *s2){
 
 /* accept two positive number strings, and evaluate if s2 is smaller than s1 */
 int
-numcmp(char *s1, char*s2){
+no_smaller(char *s1, char*s2){
     if (strlen(s1) > strlen(s2)) {
         return TRUE;
     } else if (strlen(s1) == strlen(s2)){
@@ -446,11 +465,18 @@ numcmp(char *s1, char*s2){
 /* update the indicated variable var1 by doing an addition, using var2 to compute var1 = var1 + var2, assuming both are positive numbers */
 void
 do_plus(longint_t *var1, longint_t *var2) {
+    // in the case where var2 == var1
+    if (var2 == var1) {
+        longint_t temp;
+        structcopy(&temp, var1);
+        var2 = &temp;
+    }
+    
     char result[INTSIZE+1];
     
     *result = 0;
     
-    int u1 = var1->length, u2 = var2->length, i = 0; // i: counter on result
+    int u1 = (int)strlen(var1->value), u2 = (int)strlen(var2->value), i = 0; // i: counter on result
 	
     // stores the resulting number in an array in a reverse order
     for (; (u1 > 0 || u2 > 0) && i < INTSIZE; u1--, u2--, i++) {
@@ -467,10 +493,13 @@ do_plus(longint_t *var1, longint_t *var2) {
         result[i+1] = '\0'; 
         if (sum > 9) {
             assert(i+1 < INTSIZE && "the summation result is too large");
-            result[i+1] = 1;
+            result[i+1] = 1;//
         }
     }
-    result[i+1] = '\0';
+    if (result[i] == 1) {
+        result[i] = to_digit(result[i]);
+        result[i+1] = '\0';
+    }
     
     char result2[INTSIZE+1];
     reversecp(result2, result);
@@ -491,7 +520,7 @@ void
 difference(char *s1, char *s2, char *result, int result_size) {
     char *bignum, *smallnum, tempresult[result_size];
     
-    if (numcmp(s1, s2)) {
+    if (no_smaller(s1, s2)) {
         bignum = s1;
         smallnum = s2;
     } else {
@@ -502,7 +531,7 @@ difference(char *s1, char *s2, char *result, int result_size) {
     
     int u1 = (int)strlen(bignum), u2 = (int)strlen(smallnum), i = 0;
     
-    assert(numcmp(bignum, smallnum));
+    assert(no_smaller(bignum, smallnum));
     // stores the difference between bignum and smallnum in an tempresult in a reverse order
     for (; u1 > 0 && i < INTSIZE; u1--, u2--, i++) {
         int diff;
@@ -530,13 +559,83 @@ difference(char *s1, char *s2, char *result, int result_size) {
     reversecp(result, tempresult);
 }
 
-
+/* multiply multiplicand with multiplier and store the product in multiplicand. multiplier remains unchanged */
 void
-multiply_helper(longint_t *result, char *factor, char*multiplier){
-    if (numcmp(multiplier, factor)) {
-        do_plus(result, result);
-        
+do_multiply(longint_t *multiplicand, longint_t *multiplier){
+    int sign = mutiplication_sign_processing(multiplicand->sign, multiplier->sign);
+    
+    longint_t factor, multiplier_cp;
+    storevalue(&factor, "1");
+    storevalue(&multiplier_cp, multiplier->value);
+    
+    if (multiplier_cp.value[0] == CH_ZERO) {
+        storevalue(multiplicand, "0");
+    } else {
+        multiply_helper(multiplicand, &factor, &multiplier_cp);
     }
+    
+    multiplicand->sign = sign;
+}
+
+
+/* return the resulting sign after multiplication between two numbers with sign1 and sign2 respecitively */
+int
+mutiplication_sign_processing(int sign1, int sign2) {
+    sign1 = sign1 - 44; //ascii number of '+' is 43, of '-' is 45
+    sign2 = sign2 - 44;
+    
+    if ((sign1 * sign2) == 1) {
+        return '+';
+    } else {
+        return '-';
+    }
+    
+}
+
+
+/* multiply a multiplicand with multiplier, and stores the result in variable result. factor = result/multiplicand, assuming all variables are positve. Note: all variables multiplies are changed in the process, assuming all are positive numbers. */
+void
+multiply_helper(longint_t *result, longint_t *factor, longint_t *multiplier){
+    if (multiplier == result) {
+        longint_t temp;
+        structcopy(&temp, result);
+        multiplier = &temp;
+    }
+    
+    //when multiplier is reduced to zero
+    if (multiplier->value[0] == CH_ZERO) {
+        return;
+    }
+    
+    // minus multiplier by 1
+    longint_t value1;
+    initstruct(&value1);
+    storevalue(&value1, "1");
+    value1.sign = MINUS;
+    num_plus(multiplier, &value1);
+    
+    if (no_smaller(multiplier->value, factor->value)) {
+        num_plus(result, result);
+        factor->sign = MINUS; //changed temporarily for subtraction
+        num_plus(multiplier, factor);
+        factor->sign = PLUS;
+        num_plus(factor, factor);
+        multiply_helper(result, factor, multiplier);
+    }
+    
+    // multiplier is non-zero, but smaller than factor
+    else {
+        longint_t copy;
+        storevalue(&copy, result->value);
+        // try addition with a value with a smaller factor
+        divide_by_two(copy.value);
+        divide_by_two(factor->value);
+        
+        multiply_helper(&copy, factor, multiplier);
+        num_plus(result, &copy);
+    }
+    
+    //result->length = (int)strlen(result->value);
 }
 
 
@@ -544,7 +643,7 @@ multiply_helper(longint_t *result, char *factor, char*multiplier){
 
 #define TWO 2
 /* replace the value in string by the quotient from division by 2, the string has to be divisible by 2 */
-void
+char*
 divide_by_two(char *string) {
     int i = 0, len = (int)strlen(string), value, remainder = 0;
     
@@ -557,7 +656,7 @@ divide_by_two(char *string) {
     }
     
     front_zero_removal(string);
-    
+    return string;
 }
 
 
@@ -566,7 +665,7 @@ void
 front_zero_removal(char *string) {
     int count = 0, i, len = (int)strlen(string);
     // calculate the number of zeros in the front
-    for (i = 0; string[i] != CH_ZERO; i++) {
+    for (i = 0; string[i] == CH_ZERO; i++) {
         count++;
     }
     
